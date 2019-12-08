@@ -25,6 +25,7 @@ public class PhotoGalleryFragment extends Fragment {
 
     private RecyclerView mPhotoRecyclerView;
     private List<GalleryItem> mItems = new ArrayList<>();
+    private int mPage;
 
     public static PhotoGalleryFragment newInstance(){
         return new PhotoGalleryFragment();
@@ -34,7 +35,8 @@ public class PhotoGalleryFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
         setRetainInstance(true);
-        new FetchItemsTask().execute();
+        mPage = 0;
+        new FetchItemsTask(mPage).execute();
     }
 
     @Override
@@ -43,20 +45,18 @@ public class PhotoGalleryFragment extends Fragment {
 
         mPhotoRecyclerView = v.findViewById(R.id.photo_recycler_view);
         mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
-        /*
+
         mPhotoRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
 
                 if (!mPhotoRecyclerView.canScrollVertically(1)) {
-                    Toast.makeText(getActivity(), "End of Results", Toast.LENGTH_LONG).show();
-
+                    mPage++;
+                    new FetchItemsTask(mPage).execute();
                 }
             }
         });
-
-         */
 
         setupAdapter();
 
@@ -111,10 +111,15 @@ public class PhotoGalleryFragment extends Fragment {
     }
 
     private class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>> {
+        private int page;
+
+        public FetchItemsTask(int p){
+            page = p;
+        }
 
         @Override
         protected List<GalleryItem> doInBackground(Void... voids) {
-            return new FlickrFetchr().fetchItems();
+            return new FlickrFetchr().fetchItems(page);
         }
 
         @Override
